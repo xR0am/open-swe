@@ -47,6 +47,9 @@ export const PROVIDER_FALLBACK_ORDER = [
   "openai",
   "anthropic",
   "google-genai",
+  "moonshot-ai",
+  "deepseek",
+  "qwen",
 ] as const;
 export type Provider = (typeof PROVIDER_FALLBACK_ORDER)[number];
 
@@ -82,6 +85,12 @@ const providerToApiKey = (
       return apiKeys.anthropicApiKey;
     case "google-genai":
       return apiKeys.googleApiKey;
+    case "moonshot-ai":
+      return apiKeys.moonshotApiKey;
+    case "deepseek":
+      return apiKeys.deepseekApiKey;
+    case "qwen":
+      return apiKeys.qwenApiKey;
     default:
       throw new Error(`Unknown provider: ${providerName}`);
   }
@@ -366,6 +375,27 @@ export class ModelManager {
         [LLMTask.REVIEWER]: "o3",
         [LLMTask.ROUTER]: "gpt-4o-mini",
         [LLMTask.SUMMARIZER]: "gpt-4.1-mini",
+      },
+      "moonshot-ai": {
+        [LLMTask.PLANNER]: "kimi-k2-0711-preview",
+        [LLMTask.PROGRAMMER]: "kimi-k2-0711-preview",
+        [LLMTask.REVIEWER]: "kimi-k2-0711-preview",
+        [LLMTask.ROUTER]: "kimi-k2-0711-preview",
+        [LLMTask.SUMMARIZER]: "kimi-k2-0711-preview",
+      },
+      deepseek: {
+        [LLMTask.PLANNER]: "deepseek-reasoner",
+        [LLMTask.PROGRAMMER]: "deepseek-chat",
+        [LLMTask.REVIEWER]: "deepseek-chat",
+        [LLMTask.ROUTER]: "deepseek-chat",
+        [LLMTask.SUMMARIZER]: "deepseek-chat",
+      },
+      qwen: {
+        [LLMTask.PLANNER]: "qwen-plus",
+        [LLMTask.PROGRAMMER]: "qwen3-coder-plus",
+        [LLMTask.REVIEWER]: "qwen-plus",
+        [LLMTask.ROUTER]: "qwen-plus",
+        [LLMTask.SUMMARIZER]: "qwen-plus",
       },
     };
 
