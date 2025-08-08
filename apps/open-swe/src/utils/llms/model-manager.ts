@@ -78,11 +78,11 @@ const THINKING_BUDGET_TOKENS = 5000;
 const getProviderBaseUrl = (provider: Provider): string | undefined => {
   switch (provider) {
     case "deepseek":
-      return "https://api.deepseek.com";
+      return "https://api.deepseek.com/v1";
     case "moonshot-ai":
-      return "https://api.moonshot.cn";
+      return "https://api.moonshot.cn/v1";
     case "qwen":
-      return "https://dashscope.aliyuncs.com";
+      return "https://dashscope.aliyuncs.com/v1";
     default:
       return undefined;
   }
