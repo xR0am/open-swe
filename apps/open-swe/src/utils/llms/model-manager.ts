@@ -74,6 +74,32 @@ export const DEFAULT_MODEL_MANAGER_CONFIG: ModelManagerConfig = {
 const MAX_RETRIES = 3;
 const THINKING_BUDGET_TOKENS = 5000;
 
+// Helper function to get base URL for OpenAI-compatible providers
+const getProviderBaseUrl = (provider: Provider): string | undefined => {
+  switch (provider) {
+    case "deepseek":
+      return "https://api.deepseek.com";
+    case "moonshot-ai":
+      return "https://api.moonshot.cn";
+    case "qwen":
+      return "https://dashscope.aliyuncs.com";
+    default:
+      return undefined;
+  }
+};
+
+// Helper function to get the actual provider to use with LangChain
+const getLangChainProvider = (provider: Provider): string => {
+  switch (provider) {
+    case "deepseek":
+    case "moonshot-ai":
+    case "qwen":
+      return "openai"; // These providers use OpenAI-compatible APIs
+    default:
+      return provider;
+  }
+};
+
 const providerToApiKey = (
   providerName: string,
   apiKeys: Record<string, string>,
@@ -186,12 +212,15 @@ export class ModelManager {
     }
 
     const apiKey = this.getUserApiKey(graphConfig, provider);
+    const langchainProvider = getLangChainProvider(provider);
+    const baseUrl = getProviderBaseUrl(provider);
 
     const modelOptions: InitChatModelArgs = {
-      modelProvider: provider,
+      modelProvider: langchainProvider,
       temperature: thinkingModel ? undefined : temperature,
       max_retries: MAX_RETRIES,
       ...(apiKey ? { apiKey } : {}),
+      ...(baseUrl ? { baseUrl } : {}),
       ...(thinkingModel && provider === "anthropic"
         ? {
             thinking: { budget_tokens: thinkingBudgetTokens, type: "enabled" },
@@ -201,8 +230,10 @@ export class ModelManager {
     };
 
     logger.debug("Initializing model", {
-      provider,
+      originalProvider: provider,
+      langchainProvider,
       modelName,
+      baseUrl,
     });
 
     return await initChatModel(modelName, modelOptions);
