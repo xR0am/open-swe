@@ -376,6 +376,7 @@ export async function checkoutBranchAndCommit(
 export async function pushEmptyCommit(
   targetRepository: TargetRepository,
   sandbox: Sandbox,
+  config: GraphConfig,
   options: {
     githubInstallationToken: string;
   },
@@ -390,12 +391,12 @@ export async function pushEmptyCommit(
 
   try {
     const absoluteRepoDir = getRepoAbsolutePath(targetRepository);
-    const setGitConfigRes = await sandbox.process.executeCommand(
-      `git config user.name "${userName}" && git config user.email "${userEmail}"`,
-      absoluteRepoDir,
-      undefined,
-      TIMEOUT_SEC,
-    );
+    const executor = createShellExecutor(config);
+    const setGitConfigRes = await executor.executeCommand({
+      command: `git config user.name "${userName}" && git config user.email "${userEmail}"`,
+      workdir: absoluteRepoDir,
+      timeout: TIMEOUT_SEC,
+    });
     if (setGitConfigRes.exitCode !== 0) {
       logger.error(`Failed to set git config`, {
         exitCode: setGitConfigRes.exitCode,
@@ -404,12 +405,11 @@ export async function pushEmptyCommit(
       return;
     }
 
-    const emptyCommitRes = await sandbox.process.executeCommand(
-      "git commit --allow-empty -m 'Empty commit to trigger CI'",
-      absoluteRepoDir,
-      undefined,
-      TIMEOUT_SEC,
-    );
+    const emptyCommitRes = await executor.executeCommand({
+      command: "git commit --allow-empty -m 'Empty commit to trigger CI'",
+      workdir: absoluteRepoDir,
+      timeout: TIMEOUT_SEC,
+    });
     if (emptyCommitRes.exitCode !== 0) {
       logger.error(`Failed to push empty commit`, {
         exitCode: emptyCommitRes.exitCode,
@@ -612,4 +612,51 @@ async function performClone(
   }
 
   return branchName;
+}
+
+export interface CheckoutFilesOptions {
+  sandbox: Sandbox;
+  repoDir: string;
+  commitSha: string;
+  filePaths: string[];
+}
+
+/**
+ * Checkout specific files from a given commit
+ */
+export async function checkoutFilesFromCommit(
+  options: CheckoutFilesOptions,
+): Promise<void> {
+  const { sandbox, repoDir, commitSha, filePaths } = options;
+
+  if (filePaths.length === 0) {
+    return;
+  }
+
+  logger.info(
+    `Checking out ${filePaths.length} files from commit ${commitSha}`,
+  );
+
+  for (const filePath of filePaths) {
+    try {
+      const result = await sandbox.process.executeCommand(
+        `git checkout --force ${commitSha} -- "${filePath}"`,
+        repoDir,
+        undefined,
+        30,
+      );
+
+      if (result.exitCode !== 0) {
+        logger.warn(
+          `Failed to checkout file ${filePath} from commit ${commitSha}: ${result.result || "Unknown error"}`,
+        );
+      } else {
+        logger.info(
+          `Successfully checked out ${filePath} from commit ${commitSha}`,
+        );
+      }
+    } catch (error) {
+      logger.warn(`Error checking out file ${filePath}:`, { error });
+    }
+  }
 }
