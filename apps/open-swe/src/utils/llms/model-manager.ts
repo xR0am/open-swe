@@ -74,6 +74,35 @@ export const DEFAULT_MODEL_MANAGER_CONFIG: ModelManagerConfig = {
 const MAX_RETRIES = 3;
 const THINKING_BUDGET_TOKENS = 5000;
 
+// Helper function to get base URL for OpenAI-compatible providers
+const getProviderBaseUrl = (provider: Provider, graphConfig?: GraphConfig): string | undefined => {
+  switch (provider) {
+    case "deepseek":
+      return "https://api.deepseek.com/v1";
+    case "moonshot-ai":
+      return "https://api.moonshot.cn/v1";
+    case "qwen":
+      // Allow override via environment variable or GraphConfig for flexibility
+      return process.env.QWEN_BASE_URL || 
+             graphConfig?.configurable?.qwenBaseUrl || 
+             "https://dashscope.aliyuncs.com/compatible-mode/v1"; // Updated for China region compatibility
+    default:
+      return undefined;
+  }
+};
+
+// Helper function to get the actual provider to use with LangChain
+const getLangChainProvider = (provider: Provider): "openai" | Provider => {
+  switch (provider) {
+    case "deepseek":
+    case "moonshot-ai":
+    case "qwen":
+      return "openai"; // These providers use OpenAI-compatible APIs
+    default:
+      return provider;
+  }
+};
+
 const providerToApiKey = (
   providerName: string,
   apiKeys: Record<string, string>,
@@ -99,6 +128,34 @@ const providerToApiKey = (
 export class ModelManager {
   private config: ModelManagerConfig;
   private circuitBreakers: Map<string, CircuitBreakerState> = new Map();
+  // WeakMap to track original providers for model instances to prevent provider confusion
+  private originalProviders: WeakMap<ConfigurableModel, Provider> = new WeakMap();
+
+  /**
+   * Infer the original provider from baseUrl during deserialization
+   */
+  private inferProviderFromBaseUrl(baseUrl?: string): Provider | null {
+    if (!baseUrl) return null;
+    
+    if (baseUrl.includes("api.deepseek.com")) return "deepseek";
+    if (baseUrl.includes("api.moonshot.cn")) return "moonshot-ai";
+    if (baseUrl.includes("dashscope.aliyuncs.com")) return "qwen";
+    
+    return null;
+  }
+
+  /**
+   * Get the original provider for a model instance, with fallback to inference from baseUrl
+   */
+  private getOriginalProvider(model: ConfigurableModel): Provider | null {
+    // First try to get from WeakMap
+    const storedProvider = this.originalProviders.get(model);
+    if (storedProvider) return storedProvider;
+    
+    // Fallback: infer from baseUrl if available in model configuration
+    const baseUrl = model._defaultConfig?.baseUrl;
+    return this.inferProviderFromBaseUrl(baseUrl);
+  }
 
   constructor(config: Partial<ModelManagerConfig> = {}) {
     this.config = { ...DEFAULT_MODEL_MANAGER_CONFIG, ...config };
@@ -186,12 +243,15 @@ export class ModelManager {
     }
 
     const apiKey = this.getUserApiKey(graphConfig, provider);
+    const langchainProvider = getLangChainProvider(provider);
+    const baseUrl = getProviderBaseUrl(provider, graphConfig);
 
     const modelOptions: InitChatModelArgs = {
-      modelProvider: provider,
+      modelProvider: langchainProvider,
       temperature: thinkingModel ? undefined : temperature,
       max_retries: MAX_RETRIES,
       ...(apiKey ? { apiKey } : {}),
+      ...(baseUrl && langchainProvider === "openai" ? { baseUrl } : {}),
       ...(thinkingModel && provider === "anthropic"
         ? {
             thinking: { budget_tokens: thinkingBudgetTokens, type: "enabled" },
@@ -200,12 +260,19 @@ export class ModelManager {
         : { maxTokens: finalMaxTokens }),
     };
 
-    logger.debug("Initializing model", {
-      provider,
+    logger.info("Initializing model", {
+      originalProvider: provider,
+      langchainProvider,
       modelName,
+      baseUrl,
     });
 
-    return await initChatModel(modelName, modelOptions);
+    const model = await initChatModel(modelName, modelOptions);
+    
+    // Store the original provider for this model instance to prevent confusion on re-initialization
+    this.originalProviders.set(model, provider);
+    
+    return model;
   }
 
   public getModelConfigs(
@@ -220,7 +287,9 @@ export class ModelManager {
     let selectedModelConfig: ModelLoadConfig | null = null;
 
     if (defaultConfig) {
-      const provider = defaultConfig.modelProvider as Provider;
+      // Use original provider instead of the potentially mapped "openai" provider
+      const originalProvider = this.getOriginalProvider(selectedModel);
+      const provider = originalProvider || (defaultConfig.modelProvider as Provider);
       const modelName = defaultConfig.model;
 
       if (provider && modelName) {

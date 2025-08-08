@@ -621,6 +621,13 @@ export const GraphConfiguration = z.object({
     metadata: GraphConfigurationMetadata.apiKeys,
   }),
   /**
+   * Custom base URL for Qwen API to override the default China region endpoint.
+   * Allows flexibility for different regions or custom deployments.
+   */
+  qwenBaseUrl: withLangGraph(z.string().optional(), {
+    metadata: { description: "Custom base URL for Qwen API" },
+  }),
+  /**
    * The user's GitHub access token. To be used in requests to get information about the user.
    */
   [GITHUB_TOKEN_COOKIE]: withLangGraph(z.string().optional(), {
