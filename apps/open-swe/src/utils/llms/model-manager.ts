@@ -89,7 +89,7 @@ const getProviderBaseUrl = (provider: Provider): string | undefined => {
 };
 
 // Helper function to get the actual provider to use with LangChain
-const getLangChainProvider = (provider: Provider): string => {
+const getLangChainProvider = (provider: Provider): Provider => {
   switch (provider) {
     case "deepseek":
     case "moonshot-ai":
@@ -220,7 +220,7 @@ export class ModelManager {
       temperature: thinkingModel ? undefined : temperature,
       max_retries: MAX_RETRIES,
       ...(apiKey ? { apiKey } : {}),
-      ...(baseUrl ? { baseUrl } : {}),
+      ...(baseUrl && langchainProvider === "openai" ? { baseUrl } : {}),
       ...(thinkingModel && provider === "anthropic"
         ? {
             thinking: { budget_tokens: thinkingBudgetTokens, type: "enabled" },
@@ -229,7 +229,7 @@ export class ModelManager {
         : { maxTokens: finalMaxTokens }),
     };
 
-    logger.debug("Initializing model", {
+    logger.info("Initializing model", {
       originalProvider: provider,
       langchainProvider,
       modelName,
