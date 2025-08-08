@@ -92,7 +92,7 @@ const getProviderBaseUrl = (provider: Provider, graphConfig?: GraphConfig): stri
 };
 
 // Helper function to get the actual provider to use with LangChain
-const getLangChainProvider = (provider: Provider): Provider => {
+const getLangChainProvider = (provider: Provider): "openai" | Provider => {
   switch (provider) {
     case "deepseek":
     case "moonshot-ai":
