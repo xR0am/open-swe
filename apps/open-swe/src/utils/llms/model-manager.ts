@@ -82,19 +82,22 @@ const getProviderBaseUrl = (provider: Provider, graphConfig?: GraphConfig): stri
     case "moonshot-ai":
       return "https://api.moonshot.cn/v1";
     case "qwen":
-      // Allow override via environment variable or GraphConfig for flexibility
-      return process.env.QWEN_BASE_URL || 
-             graphConfig?.configurable?.qwenBaseUrl || 
-             "https://dashscope.aliyuncs.com/compatible-mode/v1"; // Updated for China region compatibility
+      // Use international endpoint if configured, otherwise use China region
+      const useInternational = process.env.QWEN_USE_INTERNATIONAL === "true" || 
+                              graphConfig?.configurable?.qwenUseInternational;
+      return useInternational 
+        ? "https://dashscope-intl.aliyuncs.com/compatible-mode/v1" 
+        : "https://dashscope.aliyuncs.com/compatible-mode/v1";
     default:
       return undefined;
   }
 };
 
 // Helper function to get the actual provider to use with LangChain
-const getLangChainProvider = (provider: Provider): "openai" | Provider => {
+const getLangChainProvider = (provider: Provider): "openai" | "deepseek" | Provider => {
   switch (provider) {
     case "deepseek":
+      return "deepseek"; // Use dedicated DeepSeek package
     case "moonshot-ai":
     case "qwen":
       return "openai"; // These providers use OpenAI-compatible APIs
@@ -250,7 +253,7 @@ export class ModelManager {
       modelProvider: langchainProvider,
       max_retries: MAX_RETRIES,
       ...(apiKey ? { apiKey } : {}),
-      ...(baseUrl && langchainProvider === "openai" ? { baseUrl } : {}),
+      ...(baseUrl && (langchainProvider === "openai" || langchainProvider === "deepseek") ? { baseUrl } : {}),
       ...(thinkingModel && provider === "anthropic"
         ? {
             thinking: { budget_tokens: thinkingBudgetTokens, type: "enabled" },

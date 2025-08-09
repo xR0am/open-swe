@@ -454,6 +454,13 @@ export const GraphConfigurationMetadata: {
       type: "hidden",
     },
   },
+  qwenUseInternational: {
+    x_open_swe_ui_config: {
+      type: "checkbox",
+      default: false,
+      description: "Use international Qwen endpoint (dashscope-intl.aliyuncs.com) instead of China region endpoint. Enable this if you're outside of China for better performance.",
+    },
+  },
   [GITHUB_TOKEN_COOKIE]: {
     x_open_swe_ui_config: {
       type: "hidden",
@@ -621,11 +628,12 @@ export const GraphConfiguration = z.object({
     metadata: GraphConfigurationMetadata.apiKeys,
   }),
   /**
-   * Custom base URL for Qwen API to override the default China region endpoint.
-   * Allows flexibility for different regions or custom deployments.
+   * Whether to use the international Qwen endpoint instead of the China region endpoint.
+   * International: https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+   * China: https://dashscope.aliyuncs.com/compatible-mode/v1
    */
-  qwenBaseUrl: withLangGraph(z.string().optional(), {
-    metadata: { description: "Custom base URL for Qwen API" },
+  qwenUseInternational: withLangGraph(z.boolean().optional(), {
+    metadata: GraphConfigurationMetadata.qwenUseInternational,
   }),
   /**
    * The user's GitHub access token. To be used in requests to get information about the user.
