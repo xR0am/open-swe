@@ -46,6 +46,7 @@ const API_KEY_DEFINITIONS = {
     { id: "moonshotApiKey", name: "MoonshotAI" },
     { id: "deepseekApiKey", name: "DeepSeek" },
     { id: "qwenApiKey", name: "Qwen (Alibaba Cloud)" },
+    { id: "zaiApiKey", name: "Z.AI" },
   ],
   // infrastructure: [
   //   {

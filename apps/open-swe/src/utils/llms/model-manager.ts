@@ -50,6 +50,7 @@ export const PROVIDER_FALLBACK_ORDER = [
   "moonshot-ai",
   "deepseek",
   "qwen",
+  "z-ai",
 ] as const;
 export type Provider = (typeof PROVIDER_FALLBACK_ORDER)[number];
 
@@ -88,6 +89,8 @@ const getProviderBaseUrl = (provider: Provider, graphConfig?: GraphConfig): stri
       return useInternational 
         ? "https://dashscope-intl.aliyuncs.com/compatible-mode/v1" 
         : "https://dashscope.aliyuncs.com/compatible-mode/v1";
+    case "z-ai":
+      return "https://api.z.ai/api/paas/v4/";
     default:
       return undefined;
   }
@@ -100,6 +103,7 @@ const getLangChainProvider = (provider: Provider): "openai" | "deepseek" | Provi
       return "deepseek"; // Use dedicated DeepSeek package
     case "moonshot-ai":
     case "qwen":
+    case "z-ai":
       return "openai"; // These providers use OpenAI-compatible APIs
     default:
       return provider;
@@ -123,6 +127,8 @@ const providerToApiKey = (
       return apiKeys.deepseekApiKey;
     case "qwen":
       return apiKeys.qwenApiKey;
+    case "z-ai":
+      return apiKeys.zaiApiKey;
     default:
       throw new Error(`Unknown provider: ${providerName}`);
   }

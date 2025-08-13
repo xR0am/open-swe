@@ -107,6 +107,23 @@ export const MODEL_OPTIONS = [
     label: "Qwen3 Coder Plus",
     value: "qwen:qwen3-coder-plus",
   },
+  // Z.AI models
+  {
+    label: "GLM-4.5 (Z.AI)",
+    value: "z-ai:glm-4.5",
+  },
+  {
+    label: "GLM-4.5-Air (Z.AI)",
+    value: "z-ai:glm-4.5-air",
+  },
+  {
+    label: "GLM-4.5-Flash (Z.AI)",
+    value: "z-ai:glm-4.5-flash",
+  },
+  {
+    label: "GLM-4-32B-128K (Z.AI)",
+    value: "z-ai:glm-4-32b-0414-128k",
+  },
 ];
 
 export const MODEL_OPTIONS_NO_THINKING = MODEL_OPTIONS.filter(
