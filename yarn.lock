@@ -3119,6 +3119,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@langchain/deepseek@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@langchain/deepseek@npm:0.1.0"
+  dependencies:
+    "@langchain/openai": ^0.6.0
+  peerDependencies:
+    "@langchain/core": ">=0.3.58 <0.4.0"
+  checksum: 1a6b257f98a341717cb1a140c7eb111cbc39f9999215d04bf42050e87252933f80dc9f7b2ab7643f3683abd793d6e691d0f6fc9376ca2d1309aceba830fd7ad2
+  languageName: node
+  linkType: hard
+
 "@langchain/google-genai@npm:^0.2.9":
   version: 0.2.15
   resolution: "@langchain/google-genai@npm:0.2.15"
@@ -3303,6 +3314,19 @@ __metadata:
   peerDependencies:
     "@langchain/core": ">=0.3.58 <0.4.0"
   checksum: d7f420433b6484b33951bcb9bc1c60747888dab11502a1ba8817de47cb1fb3fcadcefbd30fb1254785612af95ebbbb0b4781326ff0eff3b2bf859c597b53e898
+  languageName: node
+  linkType: hard
+
+"@langchain/openai@npm:^0.6.0":
+  version: 0.6.7
+  resolution: "@langchain/openai@npm:0.6.7"
+  dependencies:
+    js-tiktoken: ^1.0.12
+    openai: ^5.12.1
+    zod: ^3.25.32
+  peerDependencies:
+    "@langchain/core": ">=0.3.68 <0.4.0"
+  checksum: 090a22c3fd359aed10ccdd98ba6b61a0ed50e872b568c179a0278a9e37178ea38432a6de611694fd5f661fc516d7f17818bd375decb2ed21f261e5fa697c3ca3
   languageName: node
   linkType: hard
 
@@ -4099,6 +4123,7 @@ __metadata:
     "@langchain/anthropic": ^0.3.26
     "@langchain/community": ^0.3.47
     "@langchain/core": ^0.3.65
+    "@langchain/deepseek": ^0.1.0
     "@langchain/google-genai": ^0.2.9
     "@langchain/langgraph": ^0.3.8
     "@langchain/langgraph-cli": ^0.0.47
@@ -6626,7 +6651,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/recommended@npm:^1.0.8":
+"@tsconfig/recommended@npm:^1.0.10, @tsconfig/recommended@npm:^1.0.8":
   version: 1.0.10
   resolution: "@tsconfig/recommended@npm:1.0.10"
   checksum: f79184fc035b6440cb416af816a86287d94b608f97129b66cd5de48cc89c0678101a5732f6f06319d85efa71ff75c24e646164052418b37e917791f28a041af2
@@ -16168,6 +16193,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "open-swe@workspace:."
   dependencies:
+    "@tsconfig/recommended": ^1.0.10
     turbo: ^2.5.0
     typescript: ^5
   languageName: unknown
@@ -16193,6 +16219,23 @@ __metadata:
     is-docker: ^2.1.1
     is-wsl: ^2.2.0
   checksum: 6388bfff21b40cb9bd8f913f9130d107f2ed4724ea81a8fd29798ee322b361ca31fa2cdfb491a5c31e43a3996cfe9566741238c7a741ada8d7af1cb78d85cf26
+  languageName: node
+  linkType: hard
+
+"openai@npm:^5.12.1":
+  version: 5.12.2
+  resolution: "openai@npm:5.12.2"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.23.8
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: b48116979c0666b1438d68a71df2c57833bca8c20c5d43e0c17e4d8594ca72294a1b62f40c7e3b8e5d5be644c2de5ba27fe97b8136f1de36e0490fd49c552a70
   languageName: node
   linkType: hard
 

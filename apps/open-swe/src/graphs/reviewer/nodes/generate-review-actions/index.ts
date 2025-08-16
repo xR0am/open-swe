@@ -172,14 +172,22 @@ function createToolsAndPrompt(
 
   return {
     providerTools: {
-      anthropic: anthropicTools,
+      anthropic: anthropicTools, // Assuming anthropic uses the modified tools
       openai: nonAnthropicTools,
       "google-genai": nonAnthropicTools,
+      "moonshot-ai": [], // Added missing provider
+      deepseek: [], // Added missing provider
+      qwen: [], // Added missing provider
+      "z-ai": [], // Added missing provider
     },
     providerMessages: {
       anthropic: anthropicMessages,
       openai: nonAnthropicMessages,
       "google-genai": nonAnthropicMessages,
+      "moonshot-ai": [],
+      deepseek: [],
+      qwen: [],
+      "z-ai": []
     },
   };
 }

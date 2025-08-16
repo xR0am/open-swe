@@ -507,6 +507,18 @@ export class ModelManager {
         [LLMTask.ROUTER]: "qwen-plus",
         [LLMTask.SUMMARIZER]: "qwen-plus",
       },
+      "z-ai": {
+ [LLMTask.PLANNER]: "",
+ [LLMTask.PROGRAMMER]: "",
+ [LLMTask.REVIEWER]: "",
+ [LLMTask.ROUTER]: "",
+ [LLMTask.SUMMARIZER]: "",
+      },
+      // These are already present, adding them here to fulfill the Record type
+      // "moonshot-ai": {},
+      // deepseek: {},
+      // qwen: {},
+ // "z-ai": {},
     };
 
     const modelName = defaultModels[provider][task];

@@ -5,10 +5,7 @@ import { TIMEOUT_SEC } from "@open-swe/shared/constants";
 import { createShellToolFields } from "@open-swe/shared/open-swe/tools";
 import { createShellExecutor } from "../utils/shell-executor/index.js";
 
-const DEFAULT_ENV = {
-  // Prevents corepack from showing a y/n download prompt which causes the command to hang
-  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
-};
+const DEFAULT_ENV = {};
 
 export function createShellTool(
   state: Pick<GraphState, "sandboxSessionId" | "targetRepository">,
