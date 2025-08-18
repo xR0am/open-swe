@@ -47,6 +47,7 @@ export const PROVIDER_FALLBACK_ORDER = [
   "openai",
   "anthropic",
   "google-genai",
+  "openrouter",
   "moonshot-ai",
   "deepseek",
   "qwen",
@@ -112,23 +113,29 @@ const getLangChainProvider = (provider: Provider): "openai" | "deepseek" | Provi
 
 const providerToApiKey = (
   providerName: string,
-  apiKeys: Record<string, string>,
+  apiKeys: Record<string, string | string[]>,
 ): string => {
   switch (providerName) {
     case "openai":
-      return apiKeys.openaiApiKey;
+      return apiKeys.openaiApiKey as string;
     case "anthropic":
-      return apiKeys.anthropicApiKey;
+      return apiKeys.anthropicApiKey as string;
     case "google-genai":
-      return apiKeys.googleApiKey;
+      return apiKeys.googleApiKey as string;
     case "moonshot-ai":
-      return apiKeys.moonshotApiKey;
+      return apiKeys.moonshotApiKey as string;
     case "deepseek":
-      return apiKeys.deepseekApiKey;
+      return apiKeys.deepseekApiKey as string;
     case "qwen":
-      return apiKeys.qwenApiKey;
+      return apiKeys.qwenApiKey as string;
     case "z-ai":
-      return apiKeys.zaiApiKey;
+      return apiKeys.zaiApiKey as string;
+    case "openrouter":
+      const openRouterKeys = apiKeys.openrouter as string[];
+      if (!openRouterKeys || openRouterKeys.length === 0) {
+        throw new Error("No OpenRouter API keys provided.");
+      }
+      return openRouterKeys[0];
     default:
       throw new Error(`Unknown provider: ${providerName}`);
   }
@@ -249,6 +256,17 @@ export class ModelManager {
     let finalMaxTokens = maxTokens ?? 10_000;
     if (modelName.includes("claude-3-5-haiku")) {
       finalMaxTokens = finalMaxTokens > 8_192 ? 8_192 : finalMaxTokens;
+    }
+
+    if (provider === "openrouter") {
+      const { ChatOpenRouter } = await import("./chat-openrouter.js");
+      return new ChatOpenRouter({
+        modelName,
+        temperature: temperature ?? 0,
+        maxTokens: finalMaxTokens,
+        graphConfig,
+        task: (graphConfig.configurable as any).task,
+      });
     }
 
     const apiKey = this.getUserApiKey(graphConfig, provider);
@@ -507,6 +525,25 @@ export class ModelManager {
         [LLMTask.ROUTER]: "qwen-plus",
         [LLMTask.SUMMARIZER]: "qwen-plus",
       },
+      "z-ai": {
+ [LLMTask.PLANNER]: "",
+ [LLMTask.PROGRAMMER]: "",
+ [LLMTask.REVIEWER]: "",
+ [LLMTask.ROUTER]: "",
+ [LLMTask.SUMMARIZER]: "",
+      },
+      openrouter: {
+        [LLMTask.PLANNER]: "openrouter/anthropic/claude-3-haiku",
+        [LLMTask.PROGRAMMER]: "openrouter/anthropic/claude-3-haiku",
+        [LLMTask.REVIEWER]: "openrouter/anthropic/claude-3-haiku",
+        [LLMTask.ROUTER]: "openrouter/anthropic/claude-3-haiku",
+        [LLMTask.SUMMARIZER]: "openrouter/anthropic/claude-3-haiku",
+      },
+      // These are already present, adding them here to fulfill the Record type
+      // "moonshot-ai": {},
+      // deepseek: {},
+      // qwen: {},
+ // "z-ai": {},
     };
 
     const modelName = defaultModels[provider][task];

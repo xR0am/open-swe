@@ -252,14 +252,22 @@ async function createToolsAndPrompt(
 
   return {
     providerTools: {
-      anthropic: anthropicModelTools,
-      openai: nonAnthropicModelTools,
+ anthropic: anthropicModelTools,
+      deepseek: nonAnthropicModelTools,
       "google-genai": nonAnthropicModelTools,
+      "moonshot-ai": nonAnthropicModelTools,
+      openai: nonAnthropicModelTools,
+ qwen: nonAnthropicModelTools,
+ "z-ai": nonAnthropicModelTools,
     },
     providerMessages: {
       anthropic: anthropicMessages,
-      openai: nonAnthropicMessages,
+      deepseek: nonAnthropicMessages,
       "google-genai": nonAnthropicMessages,
+      "moonshot-ai": nonAnthropicMessages,
+      openai: nonAnthropicMessages,
+ qwen: nonAnthropicMessages,
+ "z-ai": nonAnthropicMessages,
     },
   };
 }
