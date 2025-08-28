@@ -12,7 +12,12 @@ import {
 import { GraphConfig } from "@openswe/shared/open-swe/types";
 import { createLogger, LogLevel } from "../../../../utils/logger.js";
 import { getMessageContentString } from "@openswe/shared/messages";
-import { PREVIOUS_REVIEW_PROMPT, SYSTEM_PROMPT } from "./prompt.js";
+import {
+  PREVIOUS_REVIEW_PROMPT,
+  SYSTEM_PROMPT,
+  CUSTOM_FRAMEWORK_PROMPT,
+} from "./prompt.js";
+import { shouldUseCustomFramework } from "../../../../utils/should-use-custom-framework.js";
 import { getRepoAbsolutePath } from "@openswe/shared/git";
 import {
   createGrepTool,
@@ -40,7 +45,10 @@ import { BindToolsInput } from "@langchain/core/language_models/chat_models";
 
 const logger = createLogger(LogLevel.INFO, "GenerateReviewActionsNode");
 
-function formatSystemPrompt(state: ReviewerGraphState): string {
+function formatSystemPrompt(
+  state: ReviewerGraphState,
+  config: GraphConfig,
+): string {
   const activePlan = getActivePlanItems(state.taskPlan);
   const tasksString = formatPlanPromptWithSummaries(activePlan);
 
@@ -55,6 +63,10 @@ function formatSystemPrompt(state: ReviewerGraphState): string {
     .replaceAll("{CUSTOM_RULES}", formatCustomRulesPrompt(state.customRules))
     .replaceAll("{CHANGED_FILES}", state.changedFiles)
     .replaceAll("{BASE_BRANCH_NAME}", state.baseBranchName)
+    .replace(
+      "{CUSTOM_FRAMEWORK_PROMPT}",
+      shouldUseCustomFramework(config) ? CUSTOM_FRAMEWORK_PROMPT : "",
+    )
     .replaceAll("{COMPLETED_TASKS_AND_SUMMARIES}", tasksString)
     .replaceAll(
       "{DEPENDENCIES_INSTALLED}",
@@ -68,6 +80,7 @@ function formatSystemPrompt(state: ReviewerGraphState): string {
 
 const formatCacheablePrompt = (
   state: ReviewerGraphState,
+  config: GraphConfig,
   args?: {
     excludeCacheControl?: boolean;
   },
@@ -77,7 +90,7 @@ const formatCacheablePrompt = (
   const segments: CacheablePromptSegment[] = [
     {
       type: "text",
-      text: formatSystemPrompt(state),
+      text: formatSystemPrompt(state, config),
       ...(!args?.excludeCacheControl
         ? { cache_control: { type: "ephemeral" } }
         : {}),
@@ -146,7 +159,9 @@ function createToolsAndPrompt(
   const anthropicMessages = [
     {
       role: "system",
-      content: formatCacheablePrompt(state, { excludeCacheControl: false }),
+      content: formatCacheablePrompt(state, config, {
+        excludeCacheControl: false,
+      }),
     },
     {
       role: "user",
@@ -159,7 +174,9 @@ function createToolsAndPrompt(
   const nonAnthropicMessages = [
     {
       role: "system",
-      content: formatCacheablePrompt(state, { excludeCacheControl: true }),
+      content: formatCacheablePrompt(state, config, {
+        excludeCacheControl: true,
+      }),
     },
     {
       role: "user",

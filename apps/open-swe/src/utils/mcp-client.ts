@@ -8,6 +8,7 @@ import {
 } from "@openswe/shared/open-swe/mcp";
 import { createLogger, LogLevel } from "./logger.js";
 import { DEFAULT_MCP_SERVERS } from "@openswe/shared/constants";
+import { shouldUseCustomFramework } from "./should-use-custom-framework.js";
 
 const logger = createLogger(LogLevel.INFO, "MCP Client");
 
@@ -86,8 +87,10 @@ export async function getMcpTools(
   config: GraphConfig,
 ): Promise<StructuredToolInterface[]> {
   try {
-    // TODO: Remove default MCP servers obj once UI is implemented
-    const mergedServers: McpServers = { ...DEFAULT_MCP_SERVERS };
+    let mergedServers: McpServers = {};
+    if (shouldUseCustomFramework(config)) {
+      mergedServers = { ...DEFAULT_MCP_SERVERS };
+    }
 
     const mcpServersConfig = config?.configurable?.["mcpServers"];
     if (mcpServersConfig) {

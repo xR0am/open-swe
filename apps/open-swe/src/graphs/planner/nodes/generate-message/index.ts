@@ -20,7 +20,11 @@ import {
   formatFollowupMessagePrompt,
   isFollowupRequest,
 } from "../../utils/followup.js";
-import { SYSTEM_PROMPT } from "./prompt.js";
+import {
+  SYSTEM_PROMPT,
+  EXTERNAL_FRAMEWORK_DOCUMENTATION_PROMPT,
+  EXTERNAL_FRAMEWORK_PLAN_PROMPT,
+} from "./prompt.js";
 import { getRepoAbsolutePath } from "@openswe/shared/git";
 import {
   isLocalMode,
@@ -41,6 +45,7 @@ import {
 } from "../../../../utils/caching.js";
 import { createViewTool } from "../../../../tools/builtin-tools/view.js";
 import { shouldCreateIssue } from "../../../../utils/should-create-issue.js";
+import { shouldUseCustomFramework } from "../../../../utils/should-use-custom-framework.js";
 
 const logger = createLogger(LogLevel.INFO, "GeneratePlanningMessageNode");
 
@@ -80,7 +85,18 @@ function formatSystemPrompt(
       state.codebaseTree || "No codebase tree generated yet.",
     )
     .replaceAll("{CUSTOM_RULES}", formatCustomRulesPrompt(state.customRules))
-    .replace("{USER_REQUEST_PROMPT}", formatUserRequestPrompt(state.messages));
+    .replace("{USER_REQUEST_PROMPT}", formatUserRequestPrompt(state.messages))
+    .replace(
+      "{EXTERNAL_FRAMEWORK_DOCUMENTATION_PROMPT}",
+      shouldUseCustomFramework(config)
+        ? EXTERNAL_FRAMEWORK_DOCUMENTATION_PROMPT
+        : "",
+    )
+    .replace(
+      "{EXTERNAL_FRAMEWORK_PLAN_PROMPT}",
+      shouldUseCustomFramework(config) ? EXTERNAL_FRAMEWORK_PLAN_PROMPT : "",
+    )
+    .replace("{DEV_SERVER_PROMPT}", ""); // Always empty until we add dev server tool
 }
 
 export async function generateAction(
